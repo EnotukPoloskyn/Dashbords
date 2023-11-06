@@ -3,6 +3,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output
 import plotly.graph_objects as go
 import pandas as pd
+import plotly.express as px
 
 # Загрузка данных
 df = pd.read_csv('C:\programing\Dashbords\хуй.csv')
@@ -23,24 +24,46 @@ app.layout = html.Div([
         clearable=False
     ),
 
-    # График
-    dcc.Graph(id='sales-graph')
+    # Графики
+    html.Div([
+        # График 1
+        dcc.Graph(id='scatter-graph'),
+
+        # График 2
+        dcc.Graph(id='pie-chart')
+    ], style={'display': 'flex'})
 ])
 
 # Определение логики дашборда
 @app.callback(
-    Output('sales-graph', 'figure'),
+    Output('scatter-graph', 'figure'),
     [Input('service-dropdown', 'value')]
 )
-def update_graph(selected_service):
+def update_scatter_graph(selected_service):
     # Фильтрация данных
     filtered_df = df[df['Услуга'] == selected_service]
 
     # Создание графика
-    fig = go.Figure(go.Scatter(x=filtered_df['Количество'], y=filtered_df['Месяц'],))
+    fig = go.Figure(go.Scatter(x=filtered_df['Количество'], y=filtered_df['Месяц']))
 
-    fig.update_layout(title='Кривоногое гавно',
-                      plot_bgcolor='rgb(230, 230,230)',)
+    fig.update_layout(title='График количества продаж по месяцам'.format(selected_service),
+                  xaxis_title='Количество продаж',
+    plot_bgcolor='rgb(230, 230,230)')
+
+    return fig
+
+@app.callback(
+    Output('pie-chart', 'figure'),
+    [Input('service-dropdown', 'value')]
+)
+def update_pie_chart(selected_service):
+    # Фильтрация данных
+    filtered_df = df[df['Услуга'] == selected_service]
+
+    # Создание графика
+    fig = px.pie(filtered_df, names='Месяц', values='Прибыль')
+
+    fig.update_layout(title='Круговая диаграмма прибыли по месяцам')
 
     return fig
 
