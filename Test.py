@@ -26,8 +26,14 @@ app.layout = html.Div([
 
     # Графики
     html.Div([
-        # График 1
-        dcc.Graph(id='scatter-graph'),
+        # Колонка с графиками 1 и 3
+        html.Div([
+            # График 1
+            dcc.Graph(id='scatter-graph'),
+
+            # График 3
+            dcc.Graph(id='bar-chart')
+        ], style={'display': 'flex', 'flexDirection': 'column'}),
 
         # График 2
         dcc.Graph(id='pie-chart')
@@ -46,9 +52,9 @@ def update_scatter_graph(selected_service):
     # Создание графика
     fig = go.Figure(go.Scatter(x=filtered_df['Количество'], y=filtered_df['Месяц']))
 
-    fig.update_layout(title='График количества продаж по месяцам'.format(selected_service),
+    fig.update_layout(title='График количества продаж по месяцам',
                   xaxis_title='Количество продаж',
-    plot_bgcolor='rgb(230, 230,230)')
+                  plot_bgcolor='rgb(230, 230,230)')
 
     return fig
 
@@ -64,6 +70,26 @@ def update_pie_chart(selected_service):
     fig = px.pie(filtered_df, names='Месяц', values='Прибыль')
 
     fig.update_layout(title='Круговая диаграмма прибыли по месяцам')
+
+    return fig
+
+@app.callback(
+    Output('bar-chart', 'figure'),
+    [Input('service-dropdown', 'value')]
+)
+def update_bar_chart(selected_service):
+    # Фильтрация данных
+    filtered_df = df[df['Услуга'] == selected_service]
+
+    # Создание графика
+    fig = go.Figure(data=[
+        go.Bar(name='Прибыль', x=filtered_df['Месяц'], y=filtered_df['Прибыль']),
+        go.Bar(name='Расход', x=filtered_df['Месяц'], y=filtered_df['Расход'])
+    ])
+    fig.update_layout(
+        barmode='group',
+        title='Сравнение прибыли и расходов за месяц'
+    )
 
     return fig
 
